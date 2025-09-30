@@ -1,0 +1,67 @@
+/* ========= Reset / Base ========== */
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+/* ========= Theme ========== */
+:root {
+  --green: #2d7a32;     /* Primary */
+  --navy:  #0d1b2a;     /* Dark background */
+  --gold:  #c8a046;     /* Accent */
+  --ink:   #111418;     /* Default text */
+  --muted: #6b7280;     /* Muted text */
+  --bg:    #ffffff;     /* Page bg */
+  --soft:  #f9fbfc;     /* Light grey section bg */
+  --border:#e6e8eb;     /* Hairline borders */
+}
+
+/* ========= Layout Utilities ========= */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.section { padding: 72px 0; }
+.grid { display: grid; gap: 24px; }
+
+/* ========= Typography ========= */
+a { color: var(--green); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+
+/* ========= Card ========= */
+.card {
+  background: #fff; border: 1px solid var(--border); border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(16,24,40,.06);
+}
+
+/* ========= Buttons ========= */
+.btn {
+  appearance: none; border: 0; border-radius: 12px; padding: 12px 18px;
+  font-weight: 600; cursor: pointer; transition: transform .04s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+  display: inline-flex; align-items: center; gap: 10px;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn--primary {
+  background: #6ca946;
+  color: #fff;
+  border: none;
+}
+.btn--primary:hover {
+  background: #5a913a;
+}
+.btn--accent  { background: var(--gold); color:#1b1b1b; }
+.btn--outline {
+  border: 2px solid #6ca946;
+  color: #6ca946;
+  background: transparent;
+}
+.btn--outline:hover {
+  background: rgba(108,169,70,0.1);
+}
+
+
+/* ========= Spacing Utils ========= */
+.mt-24{margin-top:24px} .mt-32{margin-top:32px} .mt-48{margin-top:48px}
