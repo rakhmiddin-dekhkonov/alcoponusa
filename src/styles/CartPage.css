@@ -228,3 +228,27 @@
   box-shadow: 0 2px 15px var(--shadow-light), 0 1px 3px rgba(0,0,0,.05);
 }
 .cart-empty .btn{ margin-top: 10px; }
+
+
+/* In CartPage.css */
+.qty-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.qty-btn {
+  border: 1px solid var(--border-light, #e5e7eb);
+  background: var(--btn-bg, #fff);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.qty-input {
+  width: 56px;
+  text-align: center;
+  padding: 6px 8px;
+  border: 1px solid var(--border-light, #e5e7eb);
+  border-radius: 8px;
+}

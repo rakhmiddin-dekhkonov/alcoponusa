@@ -68,7 +68,7 @@ export default function CheckoutPage() {
             </div>
 
             <div className="form-row">
-              <input className="input" name="phone" placeholder="Phone (optional)" value={form.phone} onChange={onChange} />
+              <input className="input" name="phone" placeholder="Phone (optional)" value={form.phone} onChange={onChange} required />
               <input className="input" name="company" placeholder="Company (optional)" value={form.company} onChange={onChange} />
             </div>
 

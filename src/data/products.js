@@ -16,7 +16,7 @@ const products = [
     name: "NON-FR PANELS",
     series: "NON-FR",
     tagline:
-      "Non-FR aluminum composite panels for general purposes where fire-rated materials are not required.",
+      "Non-FR panels for general purposes where fire-rated materials are not required.",
     description:
       "Engineered for cost-effective performance and smooth flatness in signage and general cladding where fire-rating is not specified.",
     images: [nonfr1, nonfr2],
@@ -34,7 +34,7 @@ const products = [
     name: "B1, FR PANELS",
     series: "B1",
     tagline:
-      "B1, FR (fire-retardant) aluminum composite panels that meet building code requirements.",
+      "B1, FR (fire-retardant) panels that meet building code requirements.",
     description:
       "Balanced fire performance and finish quality for projects requiring a B1 FR rating.",
     images: [b1_1, b1_2],

@@ -43,7 +43,7 @@ export default function Catalog() {
     <section className="section catalog">
       <div className="container">
         {/* Header */}
-        <header className="prod__header">
+        {/* <header className="prod__header">
           <div className="header__content">
             <h1 className="section-heading">
               <span className="heading__text">Products & Systems</span>
@@ -53,7 +53,7 @@ export default function Catalog() {
               Explore our aluminum composite <strong>Products</strong> and engineered façade <strong>Systems</strong>.
             </p>
           </div>
-        </header>
+        </header> */}
 
         {/* Tabs */}
         <nav className="catalog__tabs" role="tablist" aria-label="Catalog Tabs">

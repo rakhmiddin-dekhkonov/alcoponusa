@@ -13,7 +13,7 @@ export default function Footer() {
             <div className="footer__section footer__section--brand">
               <div className="footer__brand">
                 <img className="footer__logo" src={logo} alt="ALCOPON Logo" />
-                <span className="footer__brand-text">ALCOPON</span>
+                {/* <span className="footer__brand-text">ALCOPON</span> */}
               </div>
               <p className="footer__description">
                 Premium aluminum composite panels for modern façades. 

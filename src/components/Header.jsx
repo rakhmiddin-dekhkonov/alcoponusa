@@ -40,7 +40,7 @@ export default function Header() {
         <nav className="nav__menu nav__menu--desktop">
           <NavLink to="/" end>Home</NavLink>
           <NavLink to="/about">About Us</NavLink>
-          <NavLink to="/catalog">Catalog</NavLink>
+          <NavLink to="/catalog">Products</NavLink>
           <NavLink to="/samples-finishes">Samples &amp; Finishes</NavLink>
           <NavLink to="/gallery">Gallery</NavLink>
           <NavLink to="/resources">Resources</NavLink>
