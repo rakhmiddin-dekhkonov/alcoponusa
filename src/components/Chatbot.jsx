@@ -1,3 +1,4 @@
+// src/components/Chatbot.jsx
 import React, { useEffect, useRef, useState } from "react";
 import {
   FaComments,
@@ -5,12 +6,26 @@ import {
   FaTimes,
   FaChevronDown,
 } from "react-icons/fa";
+import {
+  GoogleGenerativeAI,
+  HarmCategory,
+  HarmBlockThreshold,
+} from "@google/generative-ai";
 import "../styles/Chatbot.css";
+
+/**
+ * ⚠️ Frontend-only prototype.
+ * Your API key will be exposed in the browser. For production, proxy via a backend.
+ */
+
+const GEMINI_MODEL = "gemini-2.5-flash"; // current, fast & affordable
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [input, setInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
+
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -19,14 +34,34 @@ export default function Chatbot() {
       ts: Date.now(),
     },
   ]);
-  const listRef = useRef(null);
 
-  // Auto-scroll to bottom on new messages
+  const listRef = useRef(null);
+  const genAIRef = useRef(null);
+  const chatRef = useRef(null);
+
+  // Read API key (supports both CRA and Vite)
+  useEffect(() => {
+    const key =
+      (typeof import.meta !== "undefined" &&
+        import.meta?.env?.VITE_GEMINI_API_KEY) ||
+      process.env.REACT_APP_GEMINI_API_KEY;
+
+    if (!key) {
+      // eslint-disable-next-line no-console
+      console.error(
+        "Missing API key. Set VITE_GEMINI_API_KEY (Vite) or REACT_APP_GEMINI_API_KEY (CRA) in your .env and restart."
+      );
+      return;
+    }
+    genAIRef.current = new GoogleGenerativeAI(key);
+  }, []);
+
+  // Auto-scroll to bottom on new messages or state changes
   useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
-  }, [messages, open, minimized]);
+  }, [messages, open, minimized, isSending]);
 
   // Close with ESC
   useEffect(() => {
@@ -37,7 +72,7 @@ export default function Chatbot() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Optional: persist open/minimized state
+  // Restore open/minimized state
   useEffect(() => {
     const saved = localStorage.getItem("alcopon_chatbot_state");
     if (saved) {
@@ -53,61 +88,114 @@ export default function Chatbot() {
     );
   }, [open, minimized]);
 
+  // Build Gemini history that ALWAYS starts with a user turn
+  function toGeminiHistory(msgs) {
+    // Find the first user message; history must begin with 'user'
+    const firstUserIdx = msgs.findIndex(
+      (m) => m.role === "user" && m.content?.trim()
+    );
+    if (firstUserIdx === -1) return []; // No user messages yet
+
+    const sliced = msgs.slice(firstUserIdx);
+    const history = [];
+    for (const m of sliced) {
+      if (!m?.content?.trim()) continue;
+      if (m.role === "user") {
+        history.push({ role: "user", parts: [{ text: m.content }] });
+      } else if (m.role === "assistant") {
+        history.push({ role: "model", parts: [{ text: m.content }] });
+      }
+    }
+    return history;
+  }
+
   async function handleSend(e) {
     e?.preventDefault();
+
     const text = input.trim();
-    if (!text) return;
+    if (!text || isSending) return;
+
     setInput("");
     const userMsg = { role: "user", content: text, ts: Date.now() };
     setMessages((m) => [...m, userMsg]);
 
-    // --- Replace this with your real API call if you have one ---
-    // Example: await callChatApi(text)
-    const reply = await fakeReply(text);
-    setMessages((m) => [...m, reply]);
-  }
-
-  // Example fetch you can wire to your backend later:
-  async function callChatApi(prompt) {
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      const data = await res.json();
-      return {
-        role: "assistant",
-        content: data.reply ?? "I couldn't fetch a reply.",
-        ts: Date.now(),
-      };
-    } catch {
-      return {
-        role: "assistant",
-        content:
-          "Hmm, I couldn't reach the server. Please try again in a moment.",
-        ts: Date.now(),
-      };
-    }
-  }
+      setIsSending(true);
 
-  // Temporary local reply (remove once API is connected)
-  function fakeReply(text) {
-    return new Promise((resolve) =>
-      setTimeout(() => {
-        let canned =
-          "Thanks! I’ll route that to our team. Meanwhile you can check the Catalog and Systems pages.";
-        if (/finish|color|colour|sample/i.test(text))
-          canned =
-            "For finishes & samples, open “Finishes” → pick a finish → click “Request Sample.”";
-        if (/system|panel|spec|thick|core/i.test(text))
-          canned =
-            "Panel systems & specs are under “Systems.” Click a system to view core, thickness, and installation details.";
-        if (/contact|email|phone|support/i.test(text))
-          canned = "You can reach us on the Contact page — we’ll get back fast.";
-        resolve({ role: "assistant", content: canned, ts: Date.now() });
-      }, 600)
-    );
+      if (!genAIRef.current) {
+        throw new Error(
+          "Gemini client not initialized. Check your API key / .env and restart dev server."
+        );
+      }
+
+      // Trim history to avoid long contexts during dev
+      const MAX_TURNS = 16;
+      const trimmed = [...messages, userMsg].slice(-MAX_TURNS);
+
+      const model = genAIRef.current.getGenerativeModel({
+        model: GEMINI_MODEL,
+        // Put instructions here instead of seeding a 'model' turn in history
+        systemInstruction: {
+          text:
+            "You are Alcopon Assistant — concise, helpful, and on-brand. " +
+            "Help with products, finishes, systems, installation, and site navigation. " +
+            "If unsure, ask for clarification or direct the user to the Contact page.",
+        },
+        safetySettings: [
+          {
+            category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+            threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+          },
+          {
+            category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+            threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+          },
+          {
+            category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+            threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+          },
+          {
+            category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+            threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+          },
+        ],
+        generationConfig: {
+          temperature: 0.6,
+          topP: 0.9,
+          topK: 40,
+          maxOutputTokens: 512,
+        },
+      });
+
+      const history = toGeminiHistory(trimmed);
+      chatRef.current = model.startChat({ history });
+
+      const result = await chatRef.current.sendMessage(text);
+      const replyText = (await result.response.text())?.trim() || "…";
+
+      const reply = { role: "assistant", content: replyText, ts: Date.now() };
+      setMessages((m) => [...m, reply]);
+    } catch (err) {
+      // Verbose error surfacing
+      let msg = "Couldn’t reach Gemini.";
+      try {
+        if (err?.message) msg += ` ${err.message}`;
+        const detail =
+          err?.cause || err?.response || err?.error || err || "(no details)";
+        // eslint-disable-next-line no-console
+        console.error("Gemini error detail:", detail);
+      } catch {
+        // ignore
+      }
+      const fallback = {
+        role: "assistant",
+        content: `${msg} Check API key, model access, network, or console for details.`,
+        ts: Date.now(),
+      };
+      setMessages((m) => [...m, fallback]);
+    } finally {
+      setIsSending(false);
+    }
   }
 
   return (
@@ -165,7 +253,14 @@ export default function Chatbot() {
                     key={m.ts + "-" + i}
                     className={`alc-msg alc-msg--${m.role}`}
                   >
-                    <div className="alc-msg__bubble">{m.content}</div>
+                    <div className="alc-msg__bubble">
+                      {m.content}
+                      {i === messages.length - 1 &&
+                      isSending &&
+                      m.role === "user" ? (
+                        <span className="alc-typing"> …</span>
+                      ) : null}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -177,8 +272,13 @@ export default function Chatbot() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   aria-label="Message"
+                  disabled={isSending}
                 />
-                <button className="alc-send-btn" aria-label="Send">
+                <button
+                  className="alc-send-btn"
+                  aria-label="Send"
+                  disabled={isSending || !input.trim()}
+                >
                   <FaPaperPlane />
                 </button>
               </form>
