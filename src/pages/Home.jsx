@@ -17,7 +17,7 @@ import {
   FaLeaf,
   FaAward
 } from "react-icons/fa";
-import logo from "../assets/LOGO.png";
+import logo from "../assets/logo-header.png";
 
 
 // Enhanced Building Icon with animation
@@ -129,11 +129,14 @@ export default function Home() {
               <span>Since 2003 • Premium Quality</span>
             </div>
 
-            <div className="hero-logo reveal fade-up delay-1" aria-label="ALCOPON logo">
-              <div className="hero-logo-card">
-                <img src={logo} alt="ALCOPON Logo" className="front" />
-                <img src={logo} alt="" aria-hidden="true" className="back" />
+            <div className="hero-logo-wrapper reveal fade-up delay-1">
+              <div className="hero-logo" aria-label="ALCOPON logo">
+                <div className="hero-logo-card">
+                  <img src={logo} alt="ALCOPON Logo" className="front" />
+                  <img src={logo} alt="" aria-hidden="true" className="back" />
+                </div>
               </div>
+              <span className="hero-logo-text">ALCOPON</span>
             </div>
 
 
